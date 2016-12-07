@@ -120,16 +120,21 @@ class Rsi(object):
             totaldone = 0  # type: int
             for direction in range(newstate.directions):
                 todo = 1  # type: int
-                if state.get("delays") is not None and state["delays"][direction] is not None:
+                if state.get("delays") is not None and state["delays"][direction] is not None and len(state["delays"][direction]) != 0:
                     todo = len(state["delays"][direction])
                     newstate.delays[direction] = state["delays"][direction]
+
+                newstate.icons[direction] = [None] * todo
 
                 # Crop the icons.
                 for x in range(todo):
                     # Get coordinates to cut at from main image.
-                    box = (x % sheetdimensions[0]) * rsi.size[0], (x // sheetdimensions[0]) * rsi.size[1]  # type: Tuple[int, int]
-                    cropped = image.crop(box[0], box[1], box[0] + rsi.size[0], box[1] + rsi.size[1])  # type: Image.Image
+                    box = (totaldone % sheetdimensions[0]) * rsi.size[0], (totaldone // sheetdimensions[0]) * rsi.size[1]  # type: Tuple[int, int]
+                    cropped = image.crop((box[0], box[1], box[0] + rsi.size[0], box[1] + rsi.size[1]))  # type: Image.Image
                     newstate.icons[direction][x] = cropped
+                    totaldone += 1
+
+        return rsi
 
     @classmethod
     def from_dmi(cls: Type[T], path: str) -> T:
