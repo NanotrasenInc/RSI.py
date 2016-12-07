@@ -1,4 +1,5 @@
 import yaml
+import math
 from pathlib import Path
 from PIL import Image
 from typing import Dict, Tuple, Union, cast, TextIO, Any, List, TypeVar, Type
@@ -38,6 +39,7 @@ class Rsi(object):
         else:
             path.mkdir()
 
+        # Write metadata YAML file.
         metapath = path.joinpath("meta.yml")  # type: Path
         metayaml = {}  # type: Dict[str, Any]
         metayaml["version"] = RSI_LATEST_COMPATIBLE
@@ -64,6 +66,33 @@ class Rsi(object):
 
         with metapath.open("w") as f:
             f.write(yaml.safe_dump(metayaml))
+
+        # Write PNG files.
+        for state in self.states.values():
+            # Amount of columns is the square root of the amount of icons rounded up.
+            # Amount of rows is the amount of icons divided by the above rounded up.
+            # This ensures it's always as square as possible while being more horizontal if needed.
+            count = 0  # type: int
+            for iconlist in state.icons:
+                count += len(iconlist)
+
+            horizontal = math.ceil(math.sqrt(count))  # type: int
+            sheetdimensions = horizontal, math.ceil(count / horizontal)  # type: Tuple[int, int]
+            image = Image.new(mode="RGBA", size=(self.size[0] * sheetdimensions[0], self.size[1] * sheetdimensions[1]))  # type: Image.Image
+
+            count = 0
+            for iconlist in state.icons:
+                for icon in iconlist:
+                    row = count % sheetdimensions[0]  # type: int
+                    column = count // sheetdimensions[0]  # type: int
+
+                    point = row * self.size[0], column * self.size[0]  # type: Tuple[int, int]
+                    image.paste(icon, box=point)
+
+                    count += 1
+
+            pngpath = path.joinpath(state.full_name + ".png")  # type: Path
+            image.save(pngpath, "PNG")
 
     @classmethod
     def open(cls: Type[T], path: Union[str, Path]) -> T:
@@ -99,7 +128,7 @@ class Rsi(object):
                 for x in range(todo):
                     # Get coordinates to cut at from main image.
                     box = (x % sheetdimensions[0]) * rsi.size[0], (x // sheetdimensions[0]) * rsi.size[1]  # type: Tuple[int, int]
-                    cropped = image.crop(box[0], box[1], box[0] + rsi.size[0], box[1] + rsi.size[1])  # type: Image
+                    cropped = image.crop(box[0], box[1], box[0] + rsi.size[0], box[1] + rsi.size[1])  # type: Image.Image
                     newstate.icons[direction][x] = cropped
 
     @classmethod

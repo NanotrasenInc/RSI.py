@@ -13,4 +13,4 @@ class State(object):
         self.directions = directions  # type: int
 
         self.delays = [[] for i in range(self.directions)]  # type: List[List[float]]
-        self.icons = [[] for i in range(self.directions)]  # type: List[List[Image]]
+        self.icons = [[] for i in range(self.directions)]  # type: List[List[Image.Image]]
