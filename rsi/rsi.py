@@ -1,4 +1,4 @@
-import yaml
+import json
 import math
 from pathlib import Path
 from PIL import Image
@@ -39,11 +39,11 @@ class Rsi(object):
         else:
             path.mkdir()
 
-        # Write metadata YAML file.
+        # Write metadata json file.
         metapath = path.joinpath("meta.yml")  # type: Path
-        metayaml = {}  # type: Dict[str, Any]
-        metayaml["version"] = RSI_LATEST_COMPATIBLE
-        metayaml["size"] = {"x": self.size[0], "y": self.size[1]}
+        metajson = {}  # type: Dict[str, Any]
+        metajson["version"] = RSI_LATEST_COMPATIBLE
+        metajson["size"] = {"x": self.size[0], "y": self.size[1]}
 
         states = []  # type: List[Dict[str, Any]]
         for state in self.states.values():
@@ -62,10 +62,10 @@ class Rsi(object):
         for state in states:
             del state["fullname"]
 
-        metayaml["states"] = states
+        metajson["states"] = states
 
         with metapath.open("w") as f:
-            f.write(yaml.safe_dump(metayaml))
+            f.write(json.dumps(metajson))
 
         # Write PNG files.
         for state in self.states.values():
@@ -104,7 +104,7 @@ class Rsi(object):
 
         metapath = path.joinpath("meta.yml")  # type: Path
         with metapath.open() as f:
-            meta = yaml.safe_load(f.read())  # type: Dict[str, Any]
+            meta = json.loads(f.read())  # type: Dict[str, Any]
 
         print(meta)
 
