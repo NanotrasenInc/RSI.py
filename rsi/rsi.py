@@ -40,7 +40,7 @@ class Rsi(object):
             path.mkdir()
 
         # Write metadata json file.
-        metapath = path.joinpath("meta.yml")  # type: Path
+        metapath = path.joinpath("meta.json")  # type: Path
         metajson = {}  # type: Dict[str, Any]
         metajson["version"] = RSI_LATEST_COMPATIBLE
         metajson["size"] = {"x": self.size[0], "y": self.size[1]}
@@ -102,7 +102,7 @@ class Rsi(object):
         if not path.is_dir():
             raise ValueError("Non-directory passed to open().")
 
-        metapath = path.joinpath("meta.yml")  # type: Path
+        metapath = path.joinpath("meta.json")  # type: Path
         with metapath.open() as f:
             meta = json.loads(f.read())  # type: Dict[str, Any]
 
