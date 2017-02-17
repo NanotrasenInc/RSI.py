@@ -86,7 +86,7 @@ class Rsi(object):
                     row = count % sheetdimensions[0]  # type: int
                     column = count // sheetdimensions[0]  # type: int
 
-                    point = row * self.size[0], column * self.size[0]  # type: Tuple[int, int]
+                    point = row * self.size[0], column * self.size[1]  # type: Tuple[int, int]
                     image.paste(icon, box=point)
 
                     count += 1
@@ -154,7 +154,13 @@ class Rsi(object):
 
             # BYOND does not permit direction specific delays so this is easy.
             for x in range(rsstate.directions):
-                rsstate.delays[x] = dmstate.delay.copy()
+                rsstate.delays[x] = []
+                # Circumvent around a BYOND bug (?) where states have more delays than actual frames.
+                for y in range(dmstate.frames):
+                    if dmstate.frames != 1:
+                        delay = float(dmstate.delay[x])
+                        rsstate.delays[x].append(delay)
+
                 rsstate.icons[x] = dmstate.icons[x * dmstate.frames:(x + 1) * dmstate.frames]
 
         return rsi
